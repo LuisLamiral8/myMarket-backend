@@ -5,6 +5,7 @@ import com.myMarket.myMarket.dto.RegisterProductDTO;
 import com.myMarket.myMarket.entity.Product;
 import com.myMarket.myMarket.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -79,9 +80,9 @@ public class ProductController {
     }
 
     @GetMapping(value="findAllByUser")
-    public ResponseEntity<Object> findAllByUser(@RequestParam Long id) {
+    public ResponseEntity<Object> findAllByUser(@RequestParam Long id, @RequestParam Integer pageNo, @RequestParam Integer itemsPage) {
         try {
-            GetProductsDTO response = productService.getMyProducts(id);
+            Page<Product> response = productService.getMyProducts(id, pageNo, itemsPage);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (Exception error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());

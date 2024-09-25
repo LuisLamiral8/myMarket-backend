@@ -123,14 +123,12 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public GetProductsDTO getMyProducts(Long id) throws Exception {
+    public Page<Product> getMyProducts(Long id, Integer pageNo, Integer itemsPage) throws Exception {
         Optional<User> user = userRepository.findById(id);
         if (user.isPresent()) {
-            List<Product> products = productRepository.findALlBySellerId(id);
-            return GetProductsDTO.builder()
-                    .products(products)
-                    .totalProducts(products.size())
-                    .build();
+            Pageable pageable = PageRequest.of(pageNo, itemsPage);
+            Page<Product> products = productRepository.findAllBySellerId(pageable, id);
+            return products;
         } else {
             throw new Exception("The user doesn't exists");
         }
