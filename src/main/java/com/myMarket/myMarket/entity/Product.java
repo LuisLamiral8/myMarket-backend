@@ -34,4 +34,7 @@ public class Product {
     @ManyToOne
     User buyer;
     Integer stock;
+
+
+
 }

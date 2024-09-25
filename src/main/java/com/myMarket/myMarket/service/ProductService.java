@@ -19,4 +19,6 @@ public interface ProductService {
     public Product findById(Long id) throws Exception;
 
     public GetProductsDTO getMyProducts(Long id) throws Exception;
+
+    List<Product> getRandomProducts(Integer products);
 }

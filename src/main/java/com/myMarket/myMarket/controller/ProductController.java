@@ -87,4 +87,14 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
         }
     }
+
+    @GetMapping(value="getRandomProducts")
+    public ResponseEntity<Object> getRandomProducts(@RequestParam Integer products) {
+        try {
+            List<Product> response = productService.getRandomProducts(products);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception error) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
+        }
+    }
 }

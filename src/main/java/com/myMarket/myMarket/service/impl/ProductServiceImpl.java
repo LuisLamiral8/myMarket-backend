@@ -10,6 +10,7 @@ import com.myMarket.myMarket.repository.ProductRepository;
 import com.myMarket.myMarket.repository.UserRepository;
 import com.myMarket.myMarket.service.CategoryService;
 import com.myMarket.myMarket.service.ProductService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -73,6 +74,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public Product edit(Product req) throws Exception {
         Optional<Product> productExists = productRepository.findById(req.getId());
         if (productExists.isEmpty()) {
@@ -93,6 +95,8 @@ public class ProductServiceImpl implements ProductService {
                     .buyer(oldProduct.getBuyer())
                     .stock(req.getStock() != null ? req.getStock() : oldProduct.getStock())
                     .build();
+            System.out.println("Guardando producto: " + newProduct);
+
             return productRepository.save(newProduct);
         }
     }
@@ -130,6 +134,11 @@ public class ProductServiceImpl implements ProductService {
         } else {
             throw new Exception("The user doesn't exists");
         }
+    }
+
+    @Override
+    public List<Product> getRandomProducts(Integer products) {
+        return productRepository.findRandomProducts(products);
     }
 
 
