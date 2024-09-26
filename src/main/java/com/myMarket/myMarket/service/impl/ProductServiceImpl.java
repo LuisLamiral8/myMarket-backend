@@ -1,7 +1,6 @@
 package com.myMarket.myMarket.service.impl;
 
-import com.myMarket.myMarket.dto.GetProductsDTO;
-import com.myMarket.myMarket.dto.RegisterProductDTO;
+import com.myMarket.myMarket.dto.*;
 import com.myMarket.myMarket.entity.Category;
 import com.myMarket.myMarket.entity.Product;
 import com.myMarket.myMarket.entity.User;
@@ -16,7 +15,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -33,7 +40,7 @@ public class ProductServiceImpl implements ProductService {
     private UserRepository userRepository;
 
     @Override
-    public Product save(RegisterProductDTO req) throws Exception {
+    public Product save(RegisterProductDTO req, MultipartFile[] images) throws Exception {
         if (validateCategories(req.getCategory())) {
             throw new Exception("One or more categories do not exist.");
         }
@@ -49,28 +56,62 @@ public class ProductServiceImpl implements ProductService {
                 .buyer(null)
                 .stock(req.getStock())
                 .build();
-        return productRepository.save(product);
+
+        Product productSaved = productRepository.save(product);
+
+        String projectPath = System.getProperty("user.dir");
+
+        String productDir = projectPath + "/src/main/resources/static/images/products/" + productSaved.getId();
+
+        File dir = new File(productDir);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        List<String> finalImagePaths = new ArrayList<>();
+        for (MultipartFile image : images) {
+            String fileName = image.getOriginalFilename();
+            String finalImagePath = productDir + "/" + fileName;
+
+            Files.copy(image.getInputStream(), Paths.get(finalImagePath), StandardCopyOption.REPLACE_EXISTING);
+
+
+            finalImagePaths.add("/images/products/" + productSaved.getId() + "/" + fileName);
+        }
+        productSaved.setImagePaths(finalImagePaths);
+        return productRepository.save(productSaved);
     }
 
     @Override
-    public GetProductsDTO getAll() {
-        List<Product> repoResponse = productRepository.findAll();
-
-        return GetProductsDTO.builder()
-                .products(repoResponse)
-                .totalProducts(repoResponse.size())
-                .build();
-    }
-
-    @Override
-    public GetProductsDTO getAllByPage(Integer pageNo, Integer itemsPage) {
+    public ProductImagePaginatedResponseDTO getAllByPage(Integer pageNo, Integer itemsPage) throws IOException {
+        //Seteo las variables para hacer el paginado, y hago la consulta de la página
         Pageable pageable = PageRequest.of(pageNo, itemsPage);
         Page<Product> pageResult = productRepository.findAll(pageable);
-        Integer totalProducts = productRepository.findAll().size();
-        return GetProductsDTO.builder()
-                .products(pageResult.getContent())
-                .totalProducts(totalProducts)
-                .build();
+        List<Product> products = pageResult.getContent();
+        //Creo el ArrayList para modificar el objeto de la consulta anterior, para devolver directamente el blob en la imagen
+        List<ProductImageResponseDTO> productResponseList = new ArrayList<>();
+        //Getteo el directorio del proyecto
+        String projectPath = System.getProperty("user.dir");
+        for (Product product : products) {
+            //Getteo el imagePath del producto
+            String imagePath = product.getImagePaths().isEmpty() ? null : product.getImagePaths().get(0);
+            byte[] imageBlob = null;
+            //Genero la ruta final de la imagen, osea donde está guardada
+            String finalImagePath = projectPath + "/src/main/resources/static" + imagePath;
+
+            if (imagePath != null) {
+                //Lo convierto en blob
+                imageBlob = loadImageBlob(finalImagePath);
+            }
+            //Lo meto en el arraylist de los productos con las imagenes ya blobeadas
+            productResponseList.add(new ProductImageResponseDTO(product, imageBlob));
+        }
+        //Este es el array final que devuelve, por un lado los productos ya modificados con las imágenes en blob, y por
+        //Otro lado, la info de la paginación
+        ProductImagePaginatedResponseDTO finalObj = new ProductImagePaginatedResponseDTO();
+        finalObj.setMainObj(productResponseList);
+        finalObj.setPagingInfo(pageResult);
+        return finalObj;
     }
 
     @Override
@@ -113,14 +154,30 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product findById(Long id) throws Exception {
+    public ProductImagesResponseDTO findById(Long id) throws Exception {
         Optional<Product> found = productRepository.findById(id);
         if (found.isPresent()) {
-            return found.get();
+
+            Product product = found.get();
+            ProductImagesResponseDTO response = new ProductImagesResponseDTO();
+            List<byte[]> images = new ArrayList<>();
+            for (String imagePath : product.getImagePaths()) {
+                String projectPath = System.getProperty("user.dir");
+                byte[] loadedImage = null;
+                String finalImagePath = projectPath + "/src/main/resources/static" + imagePath;
+                loadedImage = loadImageBlob(finalImagePath);
+                images.add(loadedImage);
+            }
+            response.setProduct(product);
+            response.setImages(images);
+            return response;
+
+
         } else {
             throw new Exception("Product not found");
         }
     }
+
 
     @Override
     public Page<Product> getMyProducts(Long id, Integer pageNo, Integer itemsPage) throws Exception {
@@ -135,8 +192,37 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> getRandomProducts(Integer products) {
-        return productRepository.findRandomProducts(products);
+    public List<ProductImageResponseDTO> getRandomProducts(Integer products) throws IOException {
+        List<Product> allProducts = productRepository.findRandomProducts(products);
+        List<ProductImageResponseDTO> productResponseList = new ArrayList<>();
+        String projectPath = System.getProperty("user.dir");
+        for (Product product : allProducts) {
+            String firstImagePath = product.getImagePaths().isEmpty() ? null : product.getImagePaths().get(0);
+            byte[] imageBlob = null;
+            String finalImagePath = projectPath + "/src/main/resources/static" + firstImagePath;
+
+            if (firstImagePath != null) {
+                imageBlob = loadImageBlob(finalImagePath);
+            }
+            productResponseList.add(new ProductImageResponseDTO(product, imageBlob));
+        }
+        return productResponseList;
+
+    }
+
+    public byte[] loadImageBlob(String imagePath) throws IOException {
+        Path path = Paths.get(imagePath);
+        return Files.readAllBytes(path);
+    }
+
+    private List<String> saveImages(MultipartFile[] images) throws IOException {
+        List<String> imagePaths = new ArrayList<>();
+        for (MultipartFile image : images) {
+            String imagePath = "/images/" + image.getOriginalFilename();
+            Files.copy(image.getInputStream(), Paths.get(imagePath), StandardCopyOption.REPLACE_EXISTING);
+            imagePaths.add(imagePath);
+        }
+        return imagePaths;
     }
 
 

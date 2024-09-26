@@ -1,25 +1,26 @@
 package com.myMarket.myMarket.service;
 
-import com.myMarket.myMarket.dto.GetProductsDTO;
-import com.myMarket.myMarket.dto.RegisterProductDTO;
+import com.myMarket.myMarket.dto.*;
 import com.myMarket.myMarket.entity.Product;
 import org.springframework.data.domain.Page;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface ProductService {
-    public Product save(RegisterProductDTO req) throws Exception;
-    public GetProductsDTO getAll ();
+    public Product save(RegisterProductDTO req, MultipartFile[] images) throws Exception;
 
-    public GetProductsDTO getAllByPage (Integer pageNo, Integer itemsPage);
+    public ProductImagePaginatedResponseDTO getAllByPage (Integer pageNo, Integer itemsPage) throws IOException;
 
     public Product edit(Product req) throws Exception;
 
     public boolean deleteById(Long id) throws Exception;
 
-    public Product findById(Long id) throws Exception;
+    public ProductImagesResponseDTO findById(Long id) throws Exception;
 
     public Page<Product> getMyProducts(Long id, Integer pageNo, Integer itemsPage) throws Exception;
 
-    List<Product> getRandomProducts(Integer products);
+    List<ProductImageResponseDTO> getRandomProducts(Integer products) throws IOException;
+
 }

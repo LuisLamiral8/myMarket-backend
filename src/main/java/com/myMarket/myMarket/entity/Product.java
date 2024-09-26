@@ -34,7 +34,7 @@ public class Product {
     @ManyToOne
     User buyer;
     Integer stock;
-
-
+    @ElementCollection
+    private List<String> imagePaths;
 
 }

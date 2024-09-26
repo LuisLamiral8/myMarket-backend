@@ -1,15 +1,19 @@
 package com.myMarket.myMarket.controller;
 
-import com.myMarket.myMarket.dto.GetProductsDTO;
-import com.myMarket.myMarket.dto.RegisterProductDTO;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.myMarket.myMarket.dto.*;
 import com.myMarket.myMarket.entity.Product;
 import com.myMarket.myMarket.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -19,20 +23,17 @@ public class ProductController {
     private ProductService productService;
 
 
-    @PostMapping(value = "save")
-    public ResponseEntity<Object> saveProduct(@RequestBody RegisterProductDTO req) {
-        try {
-            Product response = productService.save(req);
-            return ResponseEntity.status(HttpStatus.OK).body(response);
-        } catch (Exception error) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
-        }
-    }
+    @PostMapping(value = "save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Object> saveProduct(
+            @RequestPart("product") String req,
+            @RequestPart("images") MultipartFile[] images
+    ) {
 
-    @GetMapping(value = "getAll")
-    public ResponseEntity<Object> getAll() {
         try {
-            GetProductsDTO response = productService.getAll();
+            ObjectMapper objectMapper = new ObjectMapper();
+            RegisterProductDTO product = objectMapper.readValue(req, RegisterProductDTO.class);
+            Product response = productService.save(product, images);
+
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (Exception error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
@@ -42,7 +43,7 @@ public class ProductController {
     @GetMapping(value = "getAllByPage")
     public ResponseEntity<Object> getAllByPage(@RequestParam Integer pageNo, @RequestParam Integer itemsPage) {
         try {
-            GetProductsDTO response = productService.getAllByPage(pageNo, itemsPage);
+            ProductImagePaginatedResponseDTO response = productService.getAllByPage(pageNo, itemsPage);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (Exception error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
@@ -72,14 +73,14 @@ public class ProductController {
     @GetMapping(value = "findById")
     public ResponseEntity<Object> findById(@RequestParam Long id) {
         try {
-            Product response = productService.findById(id);
+            ProductImagesResponseDTO response = productService.findById(id);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (Exception error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
         }
     }
 
-    @GetMapping(value="findAllByUser")
+    @GetMapping(value = "findAllByUser")
     public ResponseEntity<Object> findAllByUser(@RequestParam Long id, @RequestParam Integer pageNo, @RequestParam Integer itemsPage) {
         try {
             Page<Product> response = productService.getMyProducts(id, pageNo, itemsPage);
@@ -89,10 +90,10 @@ public class ProductController {
         }
     }
 
-    @GetMapping(value="getRandomProducts")
+    @GetMapping(value = "getRandomProducts")
     public ResponseEntity<Object> getRandomProducts(@RequestParam Integer products) {
         try {
-            List<Product> response = productService.getRandomProducts(products);
+            List<ProductImageResponseDTO> response = productService.getRandomProducts(products);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (Exception error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
