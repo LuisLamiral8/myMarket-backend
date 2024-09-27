@@ -1,1 +1,87 @@
-# MyMarket Backend
+# MyMarket Marketplace Backend.
+
+## TODO:
+    - /product/save, comentar proceso en service
+    - transacciones mysql?
+    - Spring security funcional
+    - Editar producto funcional (Imágenes)
+    - Eliminar producto funcional (Imágenes)
+    - Endpoint buscar producto (con ordenamiento)
+### Detalles de endpoints
+#### /category:
+- /save:
+    - POST
+    - Recibe obj por body
+    - Guardado, Validación si existe (Por nombre)
+- /edit: 
+    - POST
+    - Recibe obj por body
+    - Edición, Validacion si id viene null, Validacion si existe la categoria
+- /getAll:
+    - GET
+    - Sin params
+    - Búsqueda, no necesita validaciones
+- /deleteById:
+    - POST
+    - ?id={id}
+    - Borrado, Validación por si el id es null.
+
+### /user:
+- /register:
+    - POST
+    - Recibe obj por body
+    - Guardado, validación por si existe (Email, username y dni), password hasheada
+- /login:
+    - POST
+    - Recibe obj por body
+    - Validacion, comparación de password y la password hasheada de la db
+- /userExists:
+    - GET
+    - ?email={email}
+    - Validacion, valida si existe EMAIL
+- /recoverPassword:
+    - POST
+    - ?email={email}&newPassword={newPassword}
+    - Recuperación, pide email y nueva password, valida si existe email
+- /edit:
+    - POST
+    - Recibe obj por body
+    - Validación, password y role no pueden cambiarse, valores vacíos lo deja por defecto.
+### /product
+- /save:
+    - POST
+    - Recibe obj por formData, 'product' JSONStringify, 'images' File[]
+    - Guardado, valida por si existen categorías, guarda el producto sin el imagePath, seguido genera un directorio en el servidor para guardar las imágenes y vuelve a guardar el obj Producto con el stringPath actualizado, para ubicar las imágenes. Se guardan en /static/images/products/{idProducto}/{imágenes}
+- /getAllByPage:
+    - GET
+    - ?pageNo={numeroPágina}&itemsPage={itemsPorPágina}&opt={Ordenamiento}
+    - Búsqueda, No necesita validaciones. Devuelve paginado todos los productos con una única imágen por producto (si posee). Adicional al array de productos devuelve un obj 'pagingInfo' para poder sacar datos necesarios de la paginación
+
+- /edit:
+    - POST
+    - Falta modificar nuevos detalles para especificar documentación
+    - Edición, el seller no cambia, isSold no cambia, buyer tampoco cambia.
+- /deleteById:
+    - POST
+    - Falta modificar nuevos detalles para especificar documentación
+    - Borrado, validacion por si el id es null. borra imágenes del servidor también.
+- /findById:
+    - GET
+    - ?id={id}
+    - Búsqueda, validación por si no encuentra. Trae el producto completo con todas sus imágenes en base64.
+- /findAllByUser:
+    - GET
+    - ?id={idUsuario}&pageNo={númeroPágina}&itemsPage={itemsPorPágina}
+    - Busqueda, validación por si existe usuario, trae todos los productos que está vendiendo el usuario, con paginación. no devuelve imágen
+- /getRandomProducts:
+    - POST
+    - ?products={cantidadProductos}
+    - Busqueda, devuelve productos de la base de datos con parámetros de seleccion aleatorios, trae cantidad de productos especificados en el query param, y una única imagen en B64 por producto
+
+## TODO Pero no creo llegar:
+	- Ver mis compras
+	- Sistema comprar
+	- Editar usuario y cambiar contraseña en panel usuario
+	- Frontend buscar producto
+		
+		
