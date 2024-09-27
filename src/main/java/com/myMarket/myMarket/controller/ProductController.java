@@ -40,25 +40,42 @@ public class ProductController {
         }
     }
 
-    @GetMapping(value = "getAllByPage")
-    public ResponseEntity<Object> getAllByPage(@RequestParam Integer pageNo, @RequestParam Integer itemsPage) {
+
+    @PostMapping(value = "edit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Object> edit(
+            @RequestPart("product") String req,
+            @RequestPart("images") MultipartFile[] images
+    ) {
         try {
-            ProductImagePaginatedResponseDTO response = productService.getAllByPage(pageNo, itemsPage);
+            ObjectMapper objectMapper = new ObjectMapper();
+            Product product = objectMapper.readValue(req, Product.class);
+            Product response = productService.edit(product, images);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (Exception error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
         }
     }
 
-    @PostMapping(value = "edit")
-    public ResponseEntity<Object> edit(@RequestBody Product req) {
+    @GetMapping(value = "getAllByPage")
+    public ResponseEntity<Object> getAllByPage(@RequestParam Integer pageNo, @RequestParam Integer itemsPage, @RequestParam(defaultValue = "NAME") String opt) {
         try {
-            Product response = productService.edit(req);
+            ProductImagePaginatedResponseDTO response = productService.getAllByPage(pageNo, itemsPage, opt);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (Exception error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
         }
     }
+
+//    @PostMapping(value = "edit")
+//    public ResponseEntity<Object> edit(@RequestBody Product req) {
+//        try {
+//            Product response = productService.edit(req);
+//            return ResponseEntity.status(HttpStatus.OK).body(response);
+//        } catch (Exception error) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
+//        }
+//    }
+
 
     @PostMapping(value = "deleteById")
     public ResponseEntity<Object> deleteById(@RequestParam Long id) {
@@ -94,6 +111,16 @@ public class ProductController {
     public ResponseEntity<Object> getRandomProducts(@RequestParam Integer products) {
         try {
             List<ProductImageResponseDTO> response = productService.getRandomProducts(products);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception error) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
+        }
+    }
+
+    @GetMapping(value = "getImagesFileById")
+    public ResponseEntity<Object> getImagesFileById(@RequestParam Long id) {
+        try {
+            List<ImageResponseDTO> response = productService.getImagesFileById(id);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (Exception error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());

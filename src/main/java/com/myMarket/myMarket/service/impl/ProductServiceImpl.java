@@ -59,64 +59,67 @@ public class ProductServiceImpl implements ProductService {
 
         Product productSaved = productRepository.save(product);
 
-        String projectPath = System.getProperty("user.dir");
+        //Guardo imágenes
+        List<String> finalImagePaths = saveImages(images, productSaved.getId());
 
-        String productDir = projectPath + "/src/main/resources/static/images/products/" + productSaved.getId();
-
-        File dir = new File(productDir);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-
-        List<String> finalImagePaths = new ArrayList<>();
-        for (MultipartFile image : images) {
-            String fileName = image.getOriginalFilename();
-            String finalImagePath = productDir + "/" + fileName;
-
-            Files.copy(image.getInputStream(), Paths.get(finalImagePath), StandardCopyOption.REPLACE_EXISTING);
-
-
-            finalImagePaths.add("/images/products/" + productSaved.getId() + "/" + fileName);
-        }
         productSaved.setImagePaths(finalImagePaths);
         return productRepository.save(productSaved);
     }
 
     @Override
-    public ProductImagePaginatedResponseDTO getAllByPage(Integer pageNo, Integer itemsPage) throws IOException {
-        //Seteo las variables para hacer el paginado, y hago la consulta de la página
+    public ProductImagePaginatedResponseDTO getAllByPage(Integer pageNo, Integer itemsPage, String opt) throws IOException {
         Pageable pageable = PageRequest.of(pageNo, itemsPage);
-        Page<Product> pageResult = productRepository.findAll(pageable);
-        List<Product> products = pageResult.getContent();
-        //Creo el ArrayList para modificar el objeto de la consulta anterior, para devolver directamente el blob en la imagen
-        List<ProductImageResponseDTO> productResponseList = new ArrayList<>();
-        //Getteo el directorio del proyecto
-        String projectPath = System.getProperty("user.dir");
-        for (Product product : products) {
-            //Getteo el imagePath del producto
-            String imagePath = product.getImagePaths().isEmpty() ? null : product.getImagePaths().get(0);
-            byte[] imageBlob = null;
-            //Genero la ruta final de la imagen, osea donde está guardada
-            String finalImagePath = projectPath + "/src/main/resources/static" + imagePath;
-
-            if (imagePath != null) {
-                //Lo convierto en blob
-                imageBlob = loadImageBlob(finalImagePath);
-            }
-            //Lo meto en el arraylist de los productos con las imagenes ya blobeadas
-            productResponseList.add(new ProductImageResponseDTO(product, imageBlob));
-        }
-        //Este es el array final que devuelve, por un lado los productos ya modificados con las imágenes en blob, y por
-        //Otro lado, la info de la paginación
         ProductImagePaginatedResponseDTO finalObj = new ProductImagePaginatedResponseDTO();
-        finalObj.setMainObj(productResponseList);
-        finalObj.setPagingInfo(pageResult);
-        return finalObj;
+
+        Page<Product> pageResult;
+        List<Product> products;
+
+        switch (opt) {
+            case "NAME":
+                pageResult = productRepository.findAllByOrderByNameAsc(pageable);
+                products = pageResult.getContent();
+                //Este es el array final que devuelve, por un lado los productos ya modificados con las imágenes en blob, y por
+                //Otro lado, la info de la paginación
+                finalObj.setMainObj(getProductImageB64(products));
+                finalObj.setPagingInfo(pageResult);
+                return finalObj;
+            case "PRICE":
+                System.out.println("PRICE");
+                pageResult = productRepository.findAllByOrderByPriceAsc(pageable);
+                products = pageResult.getContent();
+                //Este es el array final que devuelve, por un lado los productos ya modificados con las imágenes en blob, y por
+                //Otro lado, la info de la paginación
+                finalObj.setMainObj(getProductImageB64(products));
+                finalObj.setPagingInfo(pageResult);
+                return finalObj;
+            case "DESCRIPTION":
+                System.out.println("DESCRIPTION");
+                pageResult = productRepository.findAllByOrderByDescriptionAsc(pageable);
+                products = pageResult.getContent();
+                //Este es el array final que devuelve, por un lado los productos ya modificados con las imágenes en blob, y por
+                //Otro lado, la info de la paginación
+                finalObj.setMainObj(getProductImageB64(products));
+                finalObj.setPagingInfo(pageResult);
+                return finalObj;
+            case "CATEGORY":
+                System.out.println("CATEGORY");
+                pageResult = productRepository.findAllByOrderByCategoryNameAsc(pageable);
+                products = pageResult.getContent();
+                //Este es el array final que devuelve, por un lado los productos ya modificados con las imágenes en blob, y por
+                //Otro lado, la info de la paginación
+                finalObj.setMainObj(getProductImageB64(products));
+                finalObj.setPagingInfo(pageResult);
+                return finalObj;
+            default:
+                return null;
+        }
+
+
     }
 
     @Override
     @Transactional
-    public Product edit(Product req) throws Exception {
+    public Product edit(Product req, MultipartFile[] images) throws Exception {
         Optional<Product> productExists = productRepository.findById(req.getId());
         if (productExists.isEmpty()) {
             throw new Exception("The product doesn't exist");
@@ -124,6 +127,9 @@ public class ProductServiceImpl implements ProductService {
             throw new Exception("One or more categories do not exist.");
         } else {
             Product oldProduct = productExists.get();
+            deleteImages(oldProduct.getImagePaths());
+            List<String> finalImagePaths = saveImages(images, oldProduct.getId());
+
             Product newProduct = Product.builder()
                     .id(req.getId())
                     .name(req.getName() != null && !req.getName().isEmpty() ? req.getName() : oldProduct.getName())
@@ -135,17 +141,56 @@ public class ProductServiceImpl implements ProductService {
                     .isSold(oldProduct.isSold())
                     .buyer(oldProduct.getBuyer())
                     .stock(req.getStock() != null ? req.getStock() : oldProduct.getStock())
+                    .imagePaths(finalImagePaths)
                     .build();
-            System.out.println("Guardando producto: " + newProduct);
 
             return productRepository.save(newProduct);
         }
     }
 
+//    @Override
+//    @Transactional
+//    public Product edit(Product req) throws Exception {
+//        Optional<Product> productExists = productRepository.findById(req.getId());
+//        if (productExists.isEmpty()) {
+//            throw new Exception("The product doesn't exist");
+//        } else if (!req.getCategory().isEmpty() && validateCategories(req.getCategory())) {
+//            throw new Exception("One or more categories do not exist.");
+//        } else {
+//            Product oldProduct = productExists.get();
+//            Product newProduct = Product.builder()
+//                    .id(req.getId())
+//                    .name(req.getName() != null && !req.getName().isEmpty() ? req.getName() : oldProduct.getName())
+//                    .description(req.getDescription() != null && !req.getDescription().isEmpty() ? req.getDescription() : oldProduct.getDescription())
+//                    .price(req.getPrice() != null ? req.getPrice() : oldProduct.getPrice())
+//                    .category(req.getCategory() != null && !req.getCategory().isEmpty() ? req.getCategory() : oldProduct.getCategory())
+//                    .isActive(req.isActive())
+//                    .seller(oldProduct.getSeller())
+//                    .isSold(oldProduct.isSold())
+//                    .buyer(oldProduct.getBuyer())
+//                    .stock(req.getStock() != null ? req.getStock() : oldProduct.getStock())
+//                    .build();
+//            System.out.println("Guardando producto: " + newProduct);
+//
+//            return productRepository.save(newProduct);
+//        }
+//    }
+
     @Override
     public boolean deleteById(Long id) throws Exception {
         Optional<Product> found = productRepository.findById(id);
         if (found.isPresent()) {
+//            for (String imagePath : found.get().getImagePaths()) {
+//                String projectPath = System.getProperty("user.dir");
+//                String finalImagePath = projectPath + "/src/main/resources/static" + imagePath;
+//                File imageFile = new File(finalImagePath);
+//                if (imageFile.exists()) {
+//                    if (!imageFile.delete()) {
+//                        throw new Exception("Failed to delete image: " + finalImagePath);
+//                    }
+//                }
+//            }
+            deleteImages(found.get().getImagePaths());
             productRepository.deleteById(id);
             return true;
         } else {
@@ -165,7 +210,7 @@ public class ProductServiceImpl implements ProductService {
                 String projectPath = System.getProperty("user.dir");
                 byte[] loadedImage = null;
                 String finalImagePath = projectPath + "/src/main/resources/static" + imagePath;
-                loadedImage = loadImageBlob(finalImagePath);
+                loadedImage = loadImageB64(finalImagePath);
                 images.add(loadedImage);
             }
             response.setProduct(product);
@@ -194,37 +239,61 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<ProductImageResponseDTO> getRandomProducts(Integer products) throws IOException {
         List<Product> allProducts = productRepository.findRandomProducts(products);
-        List<ProductImageResponseDTO> productResponseList = new ArrayList<>();
-        String projectPath = System.getProperty("user.dir");
-        for (Product product : allProducts) {
-            String firstImagePath = product.getImagePaths().isEmpty() ? null : product.getImagePaths().get(0);
-            byte[] imageBlob = null;
-            String finalImagePath = projectPath + "/src/main/resources/static" + firstImagePath;
-
-            if (firstImagePath != null) {
-                imageBlob = loadImageBlob(finalImagePath);
-            }
-            productResponseList.add(new ProductImageResponseDTO(product, imageBlob));
-        }
-        return productResponseList;
-
+        return getProductImageB64(allProducts);
     }
 
-    public byte[] loadImageBlob(String imagePath) throws IOException {
+    @Override
+    public List<ImageResponseDTO> getImagesFileById(Long id) throws Exception {
+        List<ImageResponseDTO> imagesResponse = new ArrayList<>();
+        Optional<Product> product = productRepository.findById(id);
+        if (product.isEmpty()) {
+            throw new Exception("Product not exists");
+        }
+        for (String imagePath : product.get().getImagePaths()) {
+            String projectPath = System.getProperty("user.dir");
+            String finalImagePath = projectPath + "/src/main/resources/static" + imagePath;
+            Path path = Paths.get(finalImagePath);
+            File imageFile = path.toFile();
+            if (imageFile.exists()) {
+                byte[] imageData = Files.readAllBytes(path);
+                String imageContentType = Files.probeContentType(path);
+                String imageName = imageFile.getName();
+                imagesResponse.add(new ImageResponseDTO(imageName, imageContentType, imageData));
+            }
+        }
+        return imagesResponse;
+    }
+
+    private byte[] loadImageB64(String imagePath) throws IOException {
+        //asigno la ruta q traigo a un archivo en sí
         Path path = Paths.get(imagePath);
+        //devuelvo lo que leo
         return Files.readAllBytes(path);
     }
 
-    private List<String> saveImages(MultipartFile[] images) throws IOException {
-        List<String> imagePaths = new ArrayList<>();
-        for (MultipartFile image : images) {
-            String imagePath = "/images/" + image.getOriginalFilename();
-            Files.copy(image.getInputStream(), Paths.get(imagePath), StandardCopyOption.REPLACE_EXISTING);
-            imagePaths.add(imagePath);
-        }
-        return imagePaths;
-    }
+    private List<ProductImageResponseDTO> getProductImageB64(List<Product> products) throws IOException {
+        // Creo el arraylist que va a devolver
+        List<ProductImageResponseDTO> resp = new ArrayList<>();
+        //Geteo el directorio del proyecto
+        String projectPath = System.getProperty("user.dir");
+        //Mapeo los productos q traigo por params
+        for (Product product : products) {
+            //Geteo el imagepath de la primera imágen del producto, si no tiene imágenes asigna null
+            String firstImagePath = product.getImagePaths().isEmpty() ? null : product.getImagePaths().get(0);
+            //Creo la variable donde va a estar la imagen base sesentaycuatroeada
+            byte[] image64 = null;
 
+            if (firstImagePath != null) {
+                //Genero la ruta final la imagen, q contiene el directorio del proyecto +
+                // la ruta estática + la de la imágen que asigné más arriba
+                String finalImagePath = projectPath + "/src/main/resources/static" + firstImagePath;
+                //procedo a pasarlo a B64
+                image64 = loadImageB64(finalImagePath);
+            }
+            resp.add(new ProductImageResponseDTO(product, image64));
+        }
+        return resp;
+    }
 
     private Boolean validateCategories(List<Category> categories) {
         List<Long> categoryIds = categories.stream()
@@ -237,6 +306,39 @@ public class ProductServiceImpl implements ProductService {
         }
         {
             return false;
+        }
+    }
+
+    private List<String> saveImages(MultipartFile[] images, Long productId) throws IOException {
+        List<String> finalImagePaths = new ArrayList<>();
+        String projectPath = System.getProperty("user.dir");
+        String productDir = projectPath + "/src/main/resources/static/images/products/" + productId;
+        File dir = new File(productDir);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        for (MultipartFile image : images) {
+            String fileName = image.getOriginalFilename();
+            String finalImagePath = productDir + "/" + fileName;
+
+            // Guardar la imagen
+            Files.copy(image.getInputStream(), Paths.get(finalImagePath), StandardCopyOption.REPLACE_EXISTING);
+
+            // Agregar la ruta a la lista
+            finalImagePaths.add("/images/products/" + productId + "/" + fileName);
+        }
+        return finalImagePaths;
+    }
+    private void deleteImages(List<String> imagePaths) throws Exception {
+        String projectPath = System.getProperty("user.dir");
+        for (String imagePath : imagePaths) {
+            String finalImagePath = projectPath + "/src/main/resources/static" + imagePath;
+            File imageFile = new File(finalImagePath);
+            if (imageFile.exists()) {
+                if (!imageFile.delete()) {
+                    throw new Exception("Failed to delete image: " + finalImagePath);
+                }
+            }
         }
     }
 }

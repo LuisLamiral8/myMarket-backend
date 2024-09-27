@@ -11,9 +11,9 @@ import java.util.List;
 public interface ProductService {
     public Product save(RegisterProductDTO req, MultipartFile[] images) throws Exception;
 
-    public ProductImagePaginatedResponseDTO getAllByPage (Integer pageNo, Integer itemsPage) throws IOException;
+    public ProductImagePaginatedResponseDTO getAllByPage(Integer pageNo, Integer itemsPage, String opt) throws IOException;
 
-    public Product edit(Product req) throws Exception;
+    public Product edit(Product req, MultipartFile[] images) throws Exception;
 
     public boolean deleteById(Long id) throws Exception;
 
@@ -23,4 +23,5 @@ public interface ProductService {
 
     List<ProductImageResponseDTO> getRandomProducts(Integer products) throws IOException;
 
+    List<ImageResponseDTO> getImagesFileById(Long id) throws Exception;
 }
