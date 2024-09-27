@@ -4,8 +4,6 @@
     - /product/save, comentar proceso en service
     - transacciones mysql?
     - Spring security funcional
-    - Editar producto funcional (Imágenes)
-    - Eliminar producto funcional (Imágenes)
     - Endpoint buscar producto (con ordenamiento)
 ### Detalles de endpoints
 #### /category:
@@ -25,7 +23,6 @@
     - POST
     - ?id={id}
     - Borrado, Validación por si el id es null.
-
 ### /user:
 - /register:
     - POST
@@ -56,14 +53,13 @@
     - GET
     - ?pageNo={numeroPágina}&itemsPage={itemsPorPágina}&opt={Ordenamiento}
     - Búsqueda, No necesita validaciones. Devuelve paginado todos los productos con una única imágen por producto (si posee). Adicional al array de productos devuelve un obj 'pagingInfo' para poder sacar datos necesarios de la paginación
-
 - /edit:
     - POST
-    - Falta modificar nuevos detalles para especificar documentación
-    - Edición, el seller no cambia, isSold no cambia, buyer tampoco cambia.
+    - Recibe obj por formData, 'product' JSONStringify, 'images' File[]
+    - Edición, el seller no cambia, isSold no cambia, buyer tampoco cambia. siempre tiene que recibir las imágenes el backend. Debido a que el service elimina todas las imágenes y carga las nuevas
 - /deleteById:
     - POST
-    - Falta modificar nuevos detalles para especificar documentación
+    - ?id={idProducto}
     - Borrado, validacion por si el id es null. borra imágenes del servidor también.
 - /findById:
     - GET
@@ -77,7 +73,10 @@
     - POST
     - ?products={cantidadProductos}
     - Busqueda, devuelve productos de la base de datos con parámetros de seleccion aleatorios, trae cantidad de productos especificados en el query param, y una única imagen en B64 por producto
-
+- /getImagesFileById
+  - GET
+  - ?id={idProducto}
+  - trae todas las imágenes del producto en un DTO que trae la data del archivo, el nombre del archivo y el tipo de archivo
 ## TODO Pero no creo llegar:
 	- Ver mis compras
 	- Sistema comprar
