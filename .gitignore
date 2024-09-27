@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Imágenes que guardo de los productos
+/src/main/resources/static/images/
