@@ -24,4 +24,6 @@ public interface ProductService {
     List<ProductImageResponseDTO> getRandomProducts(Integer products) throws IOException;
 
     List<ImageResponseDTO> getImagesFileById(Long id) throws Exception;
+
+    ProductImagePaginatedResponseDTO getAllByName(Integer pageNo, Integer itemsPage, String opt, String searchReq) throws IOException;
 }

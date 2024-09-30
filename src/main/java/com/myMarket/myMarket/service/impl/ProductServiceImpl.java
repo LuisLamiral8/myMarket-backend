@@ -70,10 +70,8 @@ public class ProductServiceImpl implements ProductService {
     public ProductImagePaginatedResponseDTO getAllByPage(Integer pageNo, Integer itemsPage, String opt) throws IOException {
         Pageable pageable = PageRequest.of(pageNo, itemsPage);
         ProductImagePaginatedResponseDTO finalObj = new ProductImagePaginatedResponseDTO();
-
         Page<Product> pageResult;
         List<Product> products;
-
         switch (opt) {
             case "NAME":
                 pageResult = productRepository.findAllByOrderByNameAsc(pageable);
@@ -113,8 +111,53 @@ public class ProductServiceImpl implements ProductService {
             default:
                 return null;
         }
+    }
 
-
+    @Override
+    public ProductImagePaginatedResponseDTO getAllByName(Integer pageNo, Integer itemsPage, String opt, String searchReq) throws IOException {
+        Pageable pageable = PageRequest.of(pageNo, itemsPage);
+        ProductImagePaginatedResponseDTO finalObj = new ProductImagePaginatedResponseDTO();
+        Page<Product> pageResult;
+        List<Product> products;
+        switch (opt) {
+            case "NAME":
+                pageResult = productRepository.findAllByNameContainingOrderByNameAsc(pageable, searchReq);
+                products = pageResult.getContent();
+                //Este es el array final que devuelve, por un lado los productos ya modificados con las imágenes en blob, y por
+                //Otro lado, la info de la paginación
+                finalObj.setMainObj(getProductImageB64(products));
+                finalObj.setPagingInfo(pageResult);
+                return finalObj;
+            case "PRICE":
+                System.out.println("PRICE");
+                pageResult = productRepository.findAllByNameContainingOrderByPriceAsc(pageable, searchReq);
+                products = pageResult.getContent();
+                //Este es el array final que devuelve, por un lado los productos ya modificados con las imágenes en blob, y por
+                //Otro lado, la info de la paginación
+                finalObj.setMainObj(getProductImageB64(products));
+                finalObj.setPagingInfo(pageResult);
+                return finalObj;
+            case "DESCRIPTION":
+                System.out.println("DESCRIPTION");
+                pageResult = productRepository.findAllByNameContainingOrderByDescriptionAsc(pageable, searchReq);
+                products = pageResult.getContent();
+                //Este es el array final que devuelve, por un lado los productos ya modificados con las imágenes en blob, y por
+                //Otro lado, la info de la paginación
+                finalObj.setMainObj(getProductImageB64(products));
+                finalObj.setPagingInfo(pageResult);
+                return finalObj;
+            case "CATEGORY":
+                System.out.println("CATEGORY");
+                pageResult = productRepository.findAllByNameContainingOrderByCategoryNameAsc(pageable, searchReq);
+                products = pageResult.getContent();
+                //Este es el array final que devuelve, por un lado los productos ya modificados con las imágenes en blob, y por
+                //Otro lado, la info de la paginación
+                finalObj.setMainObj(getProductImageB64(products));
+                finalObj.setPagingInfo(pageResult);
+                return finalObj;
+            default:
+                return null;
+        }
     }
 
     @Override
@@ -148,48 +191,10 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-//    @Override
-//    @Transactional
-//    public Product edit(Product req) throws Exception {
-//        Optional<Product> productExists = productRepository.findById(req.getId());
-//        if (productExists.isEmpty()) {
-//            throw new Exception("The product doesn't exist");
-//        } else if (!req.getCategory().isEmpty() && validateCategories(req.getCategory())) {
-//            throw new Exception("One or more categories do not exist.");
-//        } else {
-//            Product oldProduct = productExists.get();
-//            Product newProduct = Product.builder()
-//                    .id(req.getId())
-//                    .name(req.getName() != null && !req.getName().isEmpty() ? req.getName() : oldProduct.getName())
-//                    .description(req.getDescription() != null && !req.getDescription().isEmpty() ? req.getDescription() : oldProduct.getDescription())
-//                    .price(req.getPrice() != null ? req.getPrice() : oldProduct.getPrice())
-//                    .category(req.getCategory() != null && !req.getCategory().isEmpty() ? req.getCategory() : oldProduct.getCategory())
-//                    .isActive(req.isActive())
-//                    .seller(oldProduct.getSeller())
-//                    .isSold(oldProduct.isSold())
-//                    .buyer(oldProduct.getBuyer())
-//                    .stock(req.getStock() != null ? req.getStock() : oldProduct.getStock())
-//                    .build();
-//            System.out.println("Guardando producto: " + newProduct);
-//
-//            return productRepository.save(newProduct);
-//        }
-//    }
-
     @Override
     public boolean deleteById(Long id) throws Exception {
         Optional<Product> found = productRepository.findById(id);
         if (found.isPresent()) {
-//            for (String imagePath : found.get().getImagePaths()) {
-//                String projectPath = System.getProperty("user.dir");
-//                String finalImagePath = projectPath + "/src/main/resources/static" + imagePath;
-//                File imageFile = new File(finalImagePath);
-//                if (imageFile.exists()) {
-//                    if (!imageFile.delete()) {
-//                        throw new Exception("Failed to delete image: " + finalImagePath);
-//                    }
-//                }
-//            }
             deleteImages(found.get().getImagePaths());
             productRepository.deleteById(id);
             return true;
@@ -263,6 +268,7 @@ public class ProductServiceImpl implements ProductService {
         }
         return imagesResponse;
     }
+
 
     private byte[] loadImageB64(String imagePath) throws IOException {
         //asigno la ruta q traigo a un archivo en sí

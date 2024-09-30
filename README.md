@@ -61,8 +61,12 @@
   - Guardado, valida por si existen categorías, guarda el producto sin el imagePath, seguido genera un directorio en el servidor para guardar las imágenes y vuelve a guardar el obj Producto con el stringPath actualizado, para ubicar las imágenes. Se guardan en /static/images/products/{idProducto}/{imágenes}
 - /getAllByPage:
   - GET
-  - ?pageNo={numeroPágina}&itemsPage={itemsPorPágina}&opt={Ordenamiento}
-  - Búsqueda, No necesita validaciones. Devuelve paginado todos los productos con una única imágen por producto (si posee). Adicional al array de productos devuelve un obj 'pagingInfo' para poder sacar datos necesarios de la paginación
+  - ?pageNo={numeroPágina}&itemsPage={itemsPorPágina}&opt={ordenamiento}
+  - Búsqueda, No necesita validaciones. Devuelve paginado todos los productos con una única imágen por producto (si posee). Adicional al array de productos devuelve un obj 'pagingInfo' para poder sacar datos necesarios de la paginación. Se envia en 'opt' el tipo de ordenamiento, puede ser "NAME", "PRICE", "DESCRIPTION" o "CATEGORY".
+- /getAllByName:
+  - GET
+  - ?pageNo={numeroPágina}&itemsPage={itemsPorPágina}&opt={ordenamiento}&searchReq={peticiónBúsqueda}
+  - Búsqueda por nombre, No necesita validaciones. Devuelve paginado todos los productos con una única imágen por producto (si posee). Adicional al array de productos devuelve un obj 'pagingInfo' para poder sacar datos necesarios de la paginación. Se envia en 'opt' el tipo de ordenamiento, puede ser "NAME", "PRICE", "DESCRIPTION" o "CATEGORY".
 - /edit:
   - POST
   - Recibe obj por formData, 'product' JSONStringify, 'images' File[]

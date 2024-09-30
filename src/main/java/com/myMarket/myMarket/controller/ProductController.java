@@ -66,15 +66,15 @@ public class ProductController {
         }
     }
 
-//    @PostMapping(value = "edit")
-//    public ResponseEntity<Object> edit(@RequestBody Product req) {
-//        try {
-//            Product response = productService.edit(req);
-//            return ResponseEntity.status(HttpStatus.OK).body(response);
-//        } catch (Exception error) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
-//        }
-//    }
+    @GetMapping(value = "getAllByName")
+    public ResponseEntity<Object> getAllByName(@RequestParam Integer pageNo, @RequestParam Integer itemsPage, @RequestParam(defaultValue = "NAME") String opt, @RequestParam String searchReq) {
+        try {
+            ProductImagePaginatedResponseDTO response = productService.getAllByName(pageNo, itemsPage, opt, searchReq);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception error) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
+        }
+    }
 
 
     @PostMapping(value = "deleteById")
