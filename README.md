@@ -1,86 +1,98 @@
 # MyMarket Marketplace Backend.
 
+#### Sistema de logs basado en triggers de DB. (Query en /script)
+
 ## TODO:
+
     - /product/save, comentar proceso en service
     - transacciones mysql?
     - Spring security funcional
     - Endpoint buscar producto (con ordenamiento)
+
 ### Detalles de endpoints
+
 #### /category:
+
 - /save:
-    - POST
-    - Recibe obj por body
-    - Guardado, Validación si existe (Por nombre)
-- /edit: 
-    - POST
-    - Recibe obj por body
-    - Edición, Validacion si id viene null, Validacion si existe la categoria
+  - POST
+  - Recibe obj por body
+  - Guardado, Validación si existe (Por nombre)
+- /edit:
+  - POST
+  - Recibe obj por body
+  - Edición, Validacion si id viene null, Validacion si existe la categoria
 - /getAll:
-    - GET
-    - Sin params
-    - Búsqueda, no necesita validaciones
+  - GET
+  - Sin params
+  - Búsqueda, no necesita validaciones
 - /deleteById:
-    - POST
-    - ?id={id}
-    - Borrado, Validación por si el id es null.
+  - POST
+  - ?id={id}
+  - Borrado, Validación por si el id es null.
+
 ### /user:
+
 - /register:
-    - POST
-    - Recibe obj por body
-    - Guardado, validación por si existe (Email, username y dni), password hasheada
+  - POST
+  - Recibe obj por body
+  - Guardado, validación por si existe (Email, username y dni), password hasheada
 - /login:
-    - POST
-    - Recibe obj por body
-    - Validacion, comparación de password y la password hasheada de la db
+  - POST
+  - Recibe obj por body
+  - Validacion, comparación de password y la password hasheada de la db
 - /userExists:
-    - GET
-    - ?email={email}
-    - Validacion, valida si existe EMAIL
+  - GET
+  - ?email={email}
+  - Validacion, valida si existe EMAIL
 - /recoverPassword:
-    - POST
-    - ?email={email}&newPassword={newPassword}
-    - Recuperación, pide email y nueva password, valida si existe email
+  - POST
+  - ?email={email}&newPassword={newPassword}
+  - Recuperación, pide email y nueva password, valida si existe email
 - /edit:
-    - POST
-    - Recibe obj por body
-    - Validación, password y role no pueden cambiarse, valores vacíos lo deja por defecto.
+  - POST
+  - Recibe obj por body
+  - Validación, password y role no pueden cambiarse, valores vacíos lo deja por defecto.
+
 ### /product
+
 - /save:
-    - POST
-    - Recibe obj por formData, 'product' JSONStringify, 'images' File[]
-    - Guardado, valida por si existen categorías, guarda el producto sin el imagePath, seguido genera un directorio en el servidor para guardar las imágenes y vuelve a guardar el obj Producto con el stringPath actualizado, para ubicar las imágenes. Se guardan en /static/images/products/{idProducto}/{imágenes}
+  - POST
+  - Recibe obj por formData, 'product' JSONStringify, 'images' File[]
+  - Guardado, valida por si existen categorías, guarda el producto sin el imagePath, seguido genera un directorio en el servidor para guardar las imágenes y vuelve a guardar el obj Producto con el stringPath actualizado, para ubicar las imágenes. Se guardan en /static/images/products/{idProducto}/{imágenes}
 - /getAllByPage:
-    - GET
-    - ?pageNo={numeroPágina}&itemsPage={itemsPorPágina}&opt={Ordenamiento}
-    - Búsqueda, No necesita validaciones. Devuelve paginado todos los productos con una única imágen por producto (si posee). Adicional al array de productos devuelve un obj 'pagingInfo' para poder sacar datos necesarios de la paginación
+  - GET
+  - ?pageNo={numeroPágina}&itemsPage={itemsPorPágina}&opt={Ordenamiento}
+  - Búsqueda, No necesita validaciones. Devuelve paginado todos los productos con una única imágen por producto (si posee). Adicional al array de productos devuelve un obj 'pagingInfo' para poder sacar datos necesarios de la paginación
 - /edit:
-    - POST
-    - Recibe obj por formData, 'product' JSONStringify, 'images' File[]
-    - Edición, el seller no cambia, isSold no cambia, buyer tampoco cambia. siempre tiene que recibir las imágenes el backend. Debido a que el service elimina todas las imágenes y carga las nuevas
+  - POST
+  - Recibe obj por formData, 'product' JSONStringify, 'images' File[]
+  - Edición, el seller no cambia, isSold no cambia, buyer tampoco cambia. siempre tiene que recibir las imágenes el backend. Debido a que el service elimina todas las imágenes y carga las nuevas
 - /deleteById:
-    - POST
-    - ?id={idProducto}
-    - Borrado, validacion por si el id es null. borra imágenes del servidor también.
+  - POST
+  - ?id={idProducto}
+  - Borrado, validacion por si el id es null. borra imágenes del servidor también.
 - /findById:
-    - GET
-    - ?id={id}
-    - Búsqueda, validación por si no encuentra. Trae el producto completo con todas sus imágenes en base64.
+  - GET
+  - ?id={id}
+  - Búsqueda, validación por si no encuentra. Trae el producto completo con todas sus imágenes en base64.
 - /findAllByUser:
-    - GET
-    - ?id={idUsuario}&pageNo={númeroPágina}&itemsPage={itemsPorPágina}
-    - Busqueda, validación por si existe usuario, trae todos los productos que está vendiendo el usuario, con paginación. no devuelve imágen
+  - GET
+  - ?id={idUsuario}&pageNo={númeroPágina}&itemsPage={itemsPorPágina}
+  - Busqueda, validación por si existe usuario, trae todos los productos que está vendiendo el usuario, con paginación. no devuelve imágen
 - /getRandomProducts:
-    - POST
-    - ?products={cantidadProductos}
-    - Busqueda, devuelve productos de la base de datos con parámetros de seleccion aleatorios, trae cantidad de productos especificados en el query param, y una única imagen en B64 por producto
+  - POST
+  - ?products={cantidadProductos}
+  - Busqueda, devuelve productos de la base de datos con parámetros de seleccion aleatorios, trae cantidad de productos especificados en el query param, y una única imagen en B64 por producto
 - /getImagesFileById
   - GET
   - ?id={idProducto}
   - trae todas las imágenes del producto en un DTO que trae la data del archivo, el nombre del archivo y el tipo de archivo
+
 ## TODO Pero no creo llegar:
-	- Ver mis compras
-	- Sistema comprar
-	- Editar usuario y cambiar contraseña en panel usuario
-	- Frontend buscar producto
-		
-		
+
+    - Ver mis compras
+    - Sistema comprar
+    - Editar usuario y cambiar contraseña en panel usuario
+    - Frontend buscar producto
+
+
