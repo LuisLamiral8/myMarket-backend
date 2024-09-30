@@ -3,11 +3,8 @@
 #### Sistema de logs basado en triggers de DB. (Query en /script)
 
 ## TODO:
-
-    - /product/save, comentar proceso en service
-    - transacciones mysql?
+    - Documentar generalmente code.
     - Spring security funcional
-    - Endpoint buscar producto (con ordenamiento)
 
 ### Detalles de endpoints
 
