@@ -1,3 +1,12 @@
+CREATE TABLE IF NOT EXISTS logs (
+	id INT AUTO_INCREMENT NOT NULL,
+	type_log VARCHAR(50),
+	origin_log VARCHAR(50),
+	date_log TIMESTAMP,
+	description VARCHAR(255),
+	PRIMARY KEY (id)
+);
+
 DELIMITER //
 
 /* Triggers de usuarios */
@@ -7,7 +16,7 @@ AFTER insert ON `user`
 FOR EACH ROW
 BEGIN
     INSERT INTO logs (type_log, origin_log, date_log, description)
-    VALUES ('CREATE', 'USER', CURRENT_TIMESTAMP(), CONCAT('Created user: ', NEW.name, ', id: ', NEW.id));
+    VALUES ('CREATE', 'USER', CURRENT_TIMESTAMP(), CONCAT('Created user: ', NEW.firstname, ', id: ', NEW.id));
 END;
 //
 
@@ -16,7 +25,7 @@ AFTER update ON `user`
 FOR EACH ROW
 BEGIN
     INSERT INTO logs (type_log, origin_log, date_log, description)
-    VALUES ('UPDATE', 'USER', CURRENT_TIMESTAMP(), CONCAT('Updated user: ', NEW.name, ', id: ', NEW.id));
+    VALUES ('UPDATE', 'USER', CURRENT_TIMESTAMP(), CONCAT('Updated user: ', NEW.firstname, ', id: ', NEW.id));
 END;
 //
 
@@ -25,7 +34,7 @@ AFTER delete ON `user`
 FOR EACH ROW
 BEGIN
     INSERT INTO logs (type_log, origin_log, date_log, description)
-    VALUES ('DELETE', 'USER', CURRENT_TIMESTAMP(), CONCAT('Delete user: ', OLD.name, ', id: ', OLD.id));
+    VALUES ('DELETE', 'USER', CURRENT_TIMESTAMP(), CONCAT('Delete user: ', OLD.firstname, ', id: ', OLD.id));
 END;
 //
 /* End Triggers de usuarios */

@@ -21,7 +21,7 @@
 - /getAll:
   - GET
   - Sin params
-  - Búsqueda, no necesita validaciones
+  - Búsqueda, no necesita validaciones, trae las categorías ordenadas alfabéticamente.
 - /deleteById:
   - POST
   - ?id={id}
