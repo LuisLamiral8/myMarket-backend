@@ -14,6 +14,8 @@ import java.util.List;
 public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findAllBySellerId(Pageable page, Long id);
 
+    List<Product> findAllBySellerId(Long id);
+
     //FindAllBy Ordenado por..
     Page<Product> findAllByOrderByNameAsc(Pageable page);
     Page<Product> findAllByOrderByPriceAsc(Pageable page);

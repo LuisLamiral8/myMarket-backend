@@ -76,4 +76,12 @@ public class UserController {
         }
     }
 
+    @PostMapping(value ="deleteById")
+    public ResponseEntity<Object> deleteById(@RequestParam Long id) {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(userService.deleteById(id));
+        } catch (Exception error) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
+        }
+    }
 }

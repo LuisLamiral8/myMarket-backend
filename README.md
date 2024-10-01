@@ -56,6 +56,10 @@
   - POST
   - Recibe obj por body
   - Validación, password y role no pueden cambiarse, valores vacíos lo deja por defecto.
+- /deleteById:
+  - POST
+  - ?id={usuarioId}
+  - Validacion por si existe usuario, y si el usuario posee productos, éstos se borran antes de que se elimine el usuario, el servicio es transaccional, si ocurre un error rollbackea.
 
 ### /product
 

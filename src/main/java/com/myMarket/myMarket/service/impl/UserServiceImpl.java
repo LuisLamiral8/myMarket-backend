@@ -1,14 +1,20 @@
 package com.myMarket.myMarket.service.impl;
 
 import com.myMarket.myMarket.dto.UserDTO;
+import com.myMarket.myMarket.entity.Product;
 import com.myMarket.myMarket.entity.Role;
 import com.myMarket.myMarket.entity.User;
+import com.myMarket.myMarket.repository.ProductRepository;
 import com.myMarket.myMarket.repository.UserRepository;
+import com.myMarket.myMarket.service.ProductService;
 import com.myMarket.myMarket.service.UserService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -17,6 +23,12 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
+    private ProductService productService;
 
     public User login(String email, String password) {
         Optional<User> user = userRepository.findByEmail(email);
@@ -105,6 +117,25 @@ public class UserServiceImpl implements UserService {
             }
         } else {
             throw new Exception("The user doesn't exist ");
+        }
+    }
+
+    @Override
+    @Transactional
+    public Boolean deleteById(Long id) throws Exception {
+        Optional<User> optionalUser = userRepository.findById(id);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            List<Product> userProducts = productRepository.findAllBySellerId(user.getId());
+            //Por cada producto que tiene el usuario, borro todos.
+            for (Product pr : userProducts) {
+                productService.deleteById(pr.getId());
+            }
+
+            userRepository.deleteById(id);
+            return true;
+        } else {
+            throw new Exception("User not exists");
         }
     }
 }
