@@ -5,6 +5,9 @@
 ## TODO:
     - Documentar generalmente code.
     - Spring security funcional
+## TODO Pero no creo llegar:
+    - Ver mis compras
+    - Sistema comprar
 
 ### Detalles de endpoints
 
@@ -45,6 +48,10 @@
   - POST
   - ?email={email}&newPassword={newPassword}
   - Recuperación, pide email y nueva password, valida si existe email
+- /changePassword:
+  - POST
+  - ?email={email}&oldPassword={passVieja}}&newPassword={passNueva}
+  - Validacion, si existe email, si la contraseña anterior coincide con la de la db y recién ahí cambia por la pass nueva.
 - /edit:
   - POST
   - Recibe obj por body
@@ -88,12 +95,5 @@
   - GET
   - ?id={idProducto}
   - trae todas las imágenes del producto en un DTO que trae la data del archivo, el nombre del archivo y el tipo de archivo
-
-## TODO Pero no creo llegar:
-
-    - Ver mis compras
-    - Sistema comprar
-    - Editar usuario y cambiar contraseña en panel usuario
-    - Frontend buscar producto
 
 

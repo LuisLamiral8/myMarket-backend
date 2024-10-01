@@ -10,4 +10,6 @@ public interface UserService {
     public User edit(User user) throws Exception;
     public Boolean userExists(String email);
     public Boolean recoverPassword(String email, String password);
+
+    Boolean changePassword(String email, String oldPassword, String newPassword) throws Exception;
 }

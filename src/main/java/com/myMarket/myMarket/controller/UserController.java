@@ -20,49 +20,59 @@ public class UserController {
 
     @PostMapping(value = "register")
     public ResponseEntity<Object> register(@RequestBody @Valid UserDTO req) {
-        try{
+        try {
             User response = userService.register(req);
             return ResponseEntity.status(HttpStatus.OK).body(response);
-        }catch(Exception error){
+        } catch (Exception error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
         }
     }
 
     @PostMapping(value = "login")
-    public ResponseEntity<Object> register(@RequestBody LoginDTO req){
-        try{
+    public ResponseEntity<Object> register(@RequestBody LoginDTO req) {
+        try {
             User response = userService.login(req.getEmail(), req.getPassword());
             return ResponseEntity.status(HttpStatus.OK).body(response);
-        }catch(Exception error){
+        } catch (Exception error) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error.getMessage());
         }
 
     }
 
-    @PostMapping(value="edit")
-    public ResponseEntity<Object> edit(@RequestBody User req){
-        try{
+    @PostMapping(value = "edit")
+    public ResponseEntity<Object> edit(@RequestBody User req) {
+        try {
             User response = userService.edit(req);
             return ResponseEntity.status(HttpStatus.OK).body(response);
-        }catch(Exception error){
+        } catch (Exception error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
         }
     }
-    @GetMapping(value="userExists")
-    public ResponseEntity<Boolean> userExists(@RequestParam String email){
-        try{
-        return ResponseEntity.status(HttpStatus.OK).body(userService.userExists(email));
-        }catch(Exception error){
+
+    @GetMapping(value = "userExists")
+    public ResponseEntity<Boolean> userExists(@RequestParam String email) {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(userService.userExists(email));
+        } catch (Exception error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
         }
     }
 
-    @PostMapping(value="recoverPassword")
-    public ResponseEntity<Boolean> recoverPassword(@RequestParam String email, @RequestParam String newPassword){
-        try{
+    @PostMapping(value = "recoverPassword")
+    public ResponseEntity<Boolean> recoverPassword(@RequestParam String email, @RequestParam String newPassword) {
+        try {
             return ResponseEntity.status(HttpStatus.OK).body(userService.recoverPassword(email, newPassword));
-        }catch(Exception error){
+        } catch (Exception error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+        }
+    }
+
+    @PostMapping(value = "changePassword")
+    public ResponseEntity<Object> changePassword(@RequestParam String email, @RequestParam String oldPassword, @RequestParam String newPassword) {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(userService.changePassword(email, oldPassword, newPassword));
+        } catch (Exception error) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
         }
     }
 

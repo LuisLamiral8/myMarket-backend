@@ -31,30 +31,30 @@ public class UserServiceImpl implements UserService {
         Optional<User> foundWithEmail = userRepository.findByEmail(req.getEmail());
         Optional<User> foundWithUsername = userRepository.findByUsername(req.getUsername());
         Optional<User> foundWithDni = userRepository.findByDni(req.getDni());
-        if(foundWithEmail.isPresent()){
+        if (foundWithEmail.isPresent()) {
             throw new Exception("The email exists");
-        }else if(foundWithUsername.isPresent()){
+        } else if (foundWithUsername.isPresent()) {
             throw new Exception("The username exists");
-        }else if(foundWithDni.isPresent()){
+        } else if (foundWithDni.isPresent()) {
             throw new Exception("The Dni exists");
-        }else{
-        User user = User.builder()
-                .firstname(req.getFirstname())
-                .lastname(req.getLastname())
-                .username(req.getUsername())
-                .email(req.getEmail())
-                .password(passwordEncoder.encode(req.getPassword()))
-                .country(req.getCountry())
-                .dni(req.getDni())
-                .role(Role.USER)
-                .build();
-        return userRepository.save(user);
+        } else {
+            User user = User.builder()
+                    .firstname(req.getFirstname())
+                    .lastname(req.getLastname())
+                    .username(req.getUsername())
+                    .email(req.getEmail())
+                    .password(passwordEncoder.encode(req.getPassword()))
+                    .country(req.getCountry())
+                    .dni(req.getDni())
+                    .role(Role.USER)
+                    .build();
+            return userRepository.save(user);
         }
     }
 
     public User edit(User req) throws Exception {
         Optional<User> optUser = userRepository.findById(req.getId());
-        if(optUser.isPresent()){
+        if (optUser.isPresent()) {
             User newUser = User.builder()
                     .id(optUser.get().getId())
                     .firstname(req.getFirstname() != null && !req.getFirstname().isEmpty() ? req.getFirstname() : optUser.get().getFirstname())
@@ -68,10 +68,11 @@ public class UserServiceImpl implements UserService {
                     .build();
 
             return userRepository.save(newUser);
-        }else{
+        } else {
             throw new Exception("The user doesn't exists");
         }
     }
+
     public Boolean userExists(String email) {
         Optional<User> user = userRepository.findByEmail(email);
         return user.isPresent();
@@ -79,13 +80,31 @@ public class UserServiceImpl implements UserService {
 
     public Boolean recoverPassword(String email, String newPassword) {
         Optional<User> optionalUser = userRepository.findByEmail(email);
-        if(optionalUser.isPresent()){
-                User user = optionalUser.get();
-                user.setPassword(passwordEncoder.encode(newPassword));
-                userRepository.save(user);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userRepository.save(user);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public Boolean changePassword(String email, String oldPassword, String newPassword) throws Exception {
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+//        if (optionalUser.isPresent() && passwordEncoder.matches(oldPassword, optionalUser.get().getPassword())) {
+        if (optionalUser.isPresent()) {
+            if (passwordEncoder.matches(oldPassword, optionalUser.get().getPassword())) {
+                User userObj = optionalUser.get();
+                userObj.setPassword(passwordEncoder.encode(newPassword));
+                userRepository.save(userObj);
                 return true;
-        }else{
-           return false;
+            } else {
+                throw new Exception("The password is not correct");
+            }
+        } else {
+            throw new Exception("The user doesn't exist ");
         }
     }
 }
