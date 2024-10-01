@@ -1,5 +1,15 @@
 # MyMarket Marketplace Backend.
 
+## Tecnologías usadas:
+    - Spring boot 3.3
+    - Maven
+    - Java 17
+## Librerías usadas:
+    - Spring Security
+    - Spring data JPA
+    - MySQL Connector
+    - Lombok
+
 #### Sistema de logs basado en triggers de DB. (Query en /script)
 
 ## TODO:
