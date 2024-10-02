@@ -81,7 +81,7 @@
   - GET
   - ?username={username}
   - mediante el usuario, trae todo el objeto usuario (También devuelve props de spring security. El backend para manejar el user no debe recibirlos nuevamente.)
-  - PÚBLICA
+  - PRIVADA
 ### /product
 
 - /save:
