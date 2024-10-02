@@ -1,6 +1,7 @@
 package com.myMarket.myMarket.controller;
 
 
+import com.myMarket.myMarket.dto.AuthResponse;
 import com.myMarket.myMarket.dto.LoginDTO;
 import com.myMarket.myMarket.dto.UserDTO;
 import com.myMarket.myMarket.entity.User;
@@ -18,31 +19,11 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @PostMapping(value = "register")
-    public ResponseEntity<Object> register(@RequestBody @Valid UserDTO req) {
-        try {
-            User response = userService.register(req);
-            return ResponseEntity.status(HttpStatus.OK).body(response);
-        } catch (Exception error) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
-        }
-    }
-
-    @PostMapping(value = "login")
-    public ResponseEntity<Object> register(@RequestBody LoginDTO req) {
-        try {
-            User response = userService.login(req.getEmail(), req.getPassword());
-            return ResponseEntity.status(HttpStatus.OK).body(response);
-        } catch (Exception error) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error.getMessage());
-        }
-
-    }
 
     @PostMapping(value = "edit")
     public ResponseEntity<Object> edit(@RequestBody User req) {
         try {
-            User response = userService.edit(req);
+            AuthResponse response = userService.edit(req);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (Exception error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
@@ -50,11 +31,11 @@ public class UserController {
     }
 
     @GetMapping(value = "userExists")
-    public ResponseEntity<Boolean> userExists(@RequestParam String email) {
+    public ResponseEntity<Object> userExists(@RequestParam String email) {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(userService.userExists(email));
         } catch (Exception error) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
         }
     }
 
@@ -76,10 +57,19 @@ public class UserController {
         }
     }
 
-    @PostMapping(value ="deleteById")
-    public ResponseEntity<Object> deleteById(@RequestParam Long id) {
+    @PostMapping(value ="deleteByUsername")
+    public ResponseEntity<Object> deleteByUsername(@RequestParam String username) {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(userService.deleteById(id));
+            return ResponseEntity.status(HttpStatus.OK).body(userService.deleteByUsername(username));
+        } catch (Exception error) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
+        }
+    }
+
+    @GetMapping(value ="getByUsername")
+    public ResponseEntity<Object> getByUsername(@RequestParam String username){
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(userService.getByUsername(username));
         } catch (Exception error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
         }

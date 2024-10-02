@@ -230,12 +230,11 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
-    public Page<Product> getMyProducts(Long id, Integer pageNo, Integer itemsPage) throws Exception {
-        Optional<User> user = userRepository.findById(id);
+    public Page<Product> getMyProducts(String username, Integer pageNo, Integer itemsPage) throws Exception {
+        Optional<User> user = userRepository.findByUsername(username);
         if (user.isPresent()) {
             Pageable pageable = PageRequest.of(pageNo, itemsPage);
-            Page<Product> products = productRepository.findAllBySellerId(pageable, id);
-            return products;
+            return productRepository.findAllBySellerId(pageable, user.get().getId());
         } else {
             throw new Exception("The user doesn't exists");
         }
@@ -335,6 +334,7 @@ public class ProductServiceImpl implements ProductService {
         }
         return finalImagePaths;
     }
+
     private void deleteImages(List<String> imagePaths) throws Exception {
         String projectPath = System.getProperty("user.dir");
         for (String imagePath : imagePaths) {

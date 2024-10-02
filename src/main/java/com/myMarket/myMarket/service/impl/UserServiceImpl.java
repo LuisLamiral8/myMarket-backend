@@ -1,14 +1,17 @@
 package com.myMarket.myMarket.service.impl;
 
+import com.myMarket.myMarket.dto.AuthResponse;
 import com.myMarket.myMarket.dto.UserDTO;
 import com.myMarket.myMarket.entity.Product;
 import com.myMarket.myMarket.entity.Role;
 import com.myMarket.myMarket.entity.User;
 import com.myMarket.myMarket.repository.ProductRepository;
 import com.myMarket.myMarket.repository.UserRepository;
+import com.myMarket.myMarket.service.JwtService;
 import com.myMarket.myMarket.service.ProductService;
 import com.myMarket.myMarket.service.UserService;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,17 +21,21 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
 
     @Autowired
-    private ProductService productService;
+    private final ProductService productService;
+
+    @Autowired
+    private final JwtService jwtService;
 
     public User login(String email, String password) {
         Optional<User> user = userRepository.findByEmail(email);
@@ -64,7 +71,9 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    public User edit(User req) throws Exception {
+    //    public User edit(User req) throws Exception {
+    public AuthResponse edit(User req) throws Exception {
+
         Optional<User> optUser = userRepository.findById(req.getId());
         if (optUser.isPresent()) {
             User newUser = User.builder()
@@ -79,7 +88,11 @@ public class UserServiceImpl implements UserService {
                     .role(optUser.get().getRole())
                     .build();
 
-            return userRepository.save(newUser);
+            userRepository.save(newUser);
+            return AuthResponse.builder()
+                    .token(jwtService.getToken(newUser))
+                    .build();
+
         } else {
             throw new Exception("The user doesn't exists");
         }
@@ -122,8 +135,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public Boolean deleteById(Long id) throws Exception {
-        Optional<User> optionalUser = userRepository.findById(id);
+    public Boolean deleteByUsername(String username) throws Exception {
+        Optional<User> optionalUser = userRepository.findByUsername(username);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             List<Product> userProducts = productRepository.findAllBySellerId(user.getId());
@@ -132,10 +145,20 @@ public class UserServiceImpl implements UserService {
                 productService.deleteById(pr.getId());
             }
 
-            userRepository.deleteById(id);
+            userRepository.deleteById(user.getId());
             return true;
         } else {
             throw new Exception("User not exists");
+        }
+    }
+
+    @Override
+    public User getByUsername(String username) throws Exception {
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isPresent()) {
+            return user.get();
+        } else {
+            throw new Exception("User not found");
         }
     }
 }

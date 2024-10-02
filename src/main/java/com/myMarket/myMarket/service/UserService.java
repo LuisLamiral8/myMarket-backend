@@ -1,5 +1,6 @@
 package com.myMarket.myMarket.service;
 
+import com.myMarket.myMarket.dto.AuthResponse;
 import com.myMarket.myMarket.dto.UserDTO;
 import com.myMarket.myMarket.entity.User;
 
@@ -8,7 +9,7 @@ public interface UserService {
 
     public User login(String email, String password);
 
-    public User edit(User user) throws Exception;
+    public AuthResponse edit(User user) throws Exception;
 
     public Boolean userExists(String email);
 
@@ -16,5 +17,7 @@ public interface UserService {
 
     Boolean changePassword(String email, String oldPassword, String newPassword) throws Exception;
 
-    Boolean deleteById(Long id) throws Exception;
+    User getByUsername(String username) throws Exception;
+
+    Boolean deleteByUsername(String username) throws Exception;
 }

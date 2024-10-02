@@ -19,7 +19,7 @@ public interface ProductService {
 
     public ProductImagesResponseDTO findById(Long id) throws Exception;
 
-    public Page<Product> getMyProducts(Long id, Integer pageNo, Integer itemsPage) throws Exception;
+    public Page<Product> getMyProducts(String username, Integer pageNo, Integer itemsPage) throws Exception;
 
     List<ProductImageResponseDTO> getRandomProducts(Integer products) throws IOException;
 

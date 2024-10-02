@@ -98,9 +98,9 @@ public class ProductController {
     }
 
     @GetMapping(value = "findAllByUser")
-    public ResponseEntity<Object> findAllByUser(@RequestParam Long id, @RequestParam Integer pageNo, @RequestParam Integer itemsPage) {
+    public ResponseEntity<Object> findAllByUser(@RequestParam String username, @RequestParam Integer pageNo, @RequestParam Integer itemsPage) {
         try {
-            Page<Product> response = productService.getMyProducts(id, pageNo, itemsPage);
+            Page<Product> response = productService.getMyProducts(username, pageNo, itemsPage);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (Exception error) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error.getMessage());
